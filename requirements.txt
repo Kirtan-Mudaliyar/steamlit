@@ -4,4 +4,4 @@ pandas
 xgboost
 streamlit
 Pillow
-gdown
+joblib
