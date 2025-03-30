@@ -29,7 +29,7 @@ MODEL_URL = "https://drive.google.com/uc?id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"  
 # Function to download model
 def download_model():
     if not os.path.exists(MODEL_PATH):
-        gdown.download(MODEL_URL, MODEL_PATH, quiet=False, fuzzy=True)
+       gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
     if not os.path.exists(MODEL_PATH):  # Double-check if download was successful
         st.error("Failed to download the model. Please check the link.")
 
@@ -37,7 +37,8 @@ def download_model():
 @st.cache_resource
 def load_model():
     try:
-        return joblib.load(MODEL_PATH)  # Try joblib first (better for sklearn models)
+        return joblib.dump(model, 'voting_model.pkl')
+  # Try joblib first (better for sklearn models)
     except Exception as e:
         st.error(f"Error loading the model: {e}. Please check the file format.")
         return None
