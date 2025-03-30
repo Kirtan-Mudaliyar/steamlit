@@ -8,3 +8,7 @@ gdown==4.7.1
 Pillow==10.2.0
 requests==2.31.0
 tenacity==8.2.3
+markdown-it-py==3.0.0
+rich==13.9.4
+pygments==2.19.1
+mdurl==0.1.2
