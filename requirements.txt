@@ -6,4 +6,3 @@ streamlit
 Pillow
 joblib
 gdown
-requests
