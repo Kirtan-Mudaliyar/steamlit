@@ -14,10 +14,13 @@ st.set_page_config(page_title="Timelytics", layout="wide")
 st.title("Timelytics: Optimize your supply chain with advanced forecasting techniques.")
 
 st.caption(
-    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."")
+    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."
+)
 
 st.caption(
-    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."")
+    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."
+)
+
 
 # Define model path
 MODEL_PATH = "voting_model.pkl"
