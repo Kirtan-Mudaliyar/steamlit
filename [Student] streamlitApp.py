@@ -1,9 +1,11 @@
 import streamlit as st
 import pickle
+import joblib
 import numpy as np
 import pandas as pd
 from PIL import Image
-import gdown  # For downloading the model from Google Drive
+import gdown
+import os
 
 # Set page configuration
 st.set_page_config(page_title="Timelytics", layout="wide")
@@ -12,23 +14,33 @@ st.set_page_config(page_title="Timelytics", layout="wide")
 st.title("Timelytics: Optimize your supply chain with advanced forecasting techniques.")
 
 st.caption(
-    "Timelytics is an ensemble model that utilizes three powerful machine learning algorithms - XGBoost, Random Forests, and Support Vector Machines (SVM) - to accurately forecast Order to Delivery (OTD) times."
+    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."
 )
 
 st.caption(
     "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."
 )
 
+# Define model path
+MODEL_PATH = "voting_model.pkl"
+MODEL_URL = "https://drive.google.com/file/d/1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG/view?usp=sharing"  # Updated direct link
+
+# Function to download model
+def download_model():
+    if not os.path.exists(MODEL_PATH):
+        gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+
 # Load the trained ensemble model
 @st.cache_resource
 def load_model():
-    url = "https://drive.google.com/file/d/1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG/view?usp=sharing"  # Replace with actual Google Drive file ID
-    output = "voting_model.pkl"
-    gdown.download(url, output, quiet=False)
-    with open(output, "rb") as f:
-        model = pickle.load(f)
-    return model
+    try:
+        with open(MODEL_PATH, "rb") as f:
+            return pickle.load(f)
+    except (pickle.UnpicklingError, EOFError):
+        return joblib.load(MODEL_PATH)  # Fallback to joblib if pickle fails
 
+# Download and load model
+download_model()
 voting_model = load_model()
 
 # Wait time predictor function
