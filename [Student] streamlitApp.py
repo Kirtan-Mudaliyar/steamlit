@@ -1,130 +1,111 @@
-# Import the required libraries: Streamlit, NumPy, and Pillow (PIL).
 import streamlit as st
 import pickle
+import joblib
 import numpy as np
+import pandas as pd
 from PIL import Image
+import gdown
+import os
 
-# Set the page configuration of the app, including the page title, icon, and layout.
-"""
-Your Code Here
-"""
+# Set page configuration
+st.set_page_config(page_title="Timelytics", layout="wide")
 
-# Display the title and captions for the app.
+# Title and captions
 st.title("Timelytics: Optimize your supply chain with advanced forecasting techniques.")
 
 st.caption(
-    "Timelytics is an ensemble model that utilizes three powerful machine learning algorithms - XGBoost, Random Forests, and Support Vector Machines (SVM) - to accurately forecast Order to Delivery (OTD) times. By combining the strengths of these three algorithms, Timelytics provides a robust and reliable prediction of OTD times, helping businesses to optimize their supply chain operations."
+    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."
 )
 
 st.caption(
-    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them, reducing lead times and improving delivery times. The model utilizes historical data on order processing times, production lead times, shipping times, and other relevant variables to generate accurate forecasts of OTD times. These forecasts can be used to optimize inventory management, improve customer service, and increase overall efficiency in the supply chain."
+    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."
 )
 
 
-# Load the trained ensemble model from the saved pickle file.
-modelfile = "./voting_model.pkl"
-"""
-Your Code Here
-"""
+# Define model path
+MODEL_PATH = "voting_model.pkl"
+MODEL_URL = "https://drive.google.com/uc?id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"  # Corrected direct download link
 
-# Caching the model for faster loading
+# Function to download model
+def download_model():
+    if not os.path.exists(MODEL_PATH):
+        gdown.download(MODEL_URL, MODEL_PATH, quiet=False, fuzzy=True)
+    if not os.path.exists(MODEL_PATH):  # Double-check if download was successful
+        st.error("Failed to download the model. Please check the link.")
+
+# Load the trained ensemble model
 @st.cache_resource
+def load_model():
+    try:
+        return joblib.load(MODEL_PATH)  # Try joblib first (better for sklearn models)
+    except Exception as e:
+        st.error(f"Error loading the model: {e}. Please check the file format.")
+        return None
 
+# Download and load model
+download_model()
+voting_model = load_model()
 
-# Define the function for the wait time predictor using the loaded model. This function takes in the input parameters and returns a predicted wait time in days.
+# Wait time predictor function
 def waitime_predictor(
-    purchase_dow,
-    purchase_month,
-    year,
-    product_size_cm3,
-    product_weight_g,
-    geolocation_state_customer,
-    geolocation_state_seller,
-    distance,
-):
+    purchase_dow, purchase_month, year, product_size_cm3,
+    product_weight_g, geolocation_state_customer,
+    geolocation_state_seller, distance):
+    if voting_model is None:
+        st.error("Model failed to load. Cannot make predictions.")
+        return None
+    
     prediction = voting_model.predict(
-        np.array(
-            [
-                [
-                    purchase_dow,
-                    purchase_month,
-                    year,
-                    product_size_cm3,
-                    product_weight_g,
-                    geolocation_state_customer,
-                    geolocation_state_seller,
-                    distance,
-                ]
-            ]
-        )
+        np.array([[purchase_dow, purchase_month, year,
+                   product_size_cm3, product_weight_g,
+                   geolocation_state_customer,
+                   geolocation_state_seller, distance]])
     )
     return round(prediction[0])
 
-
-# Define the input parameters using Streamlit's sidebar. These parameters include the purchased day of the week, month, and year, product size, weight, geolocation state of the customer and seller, and distance.
+# Sidebar inputs
 with st.sidebar:
-    img = Image.open("./assets/supply_chain_optimisation.jpg")
-    st.image(img)
+    try:
+        img = Image.open("./assets/supply_chain_optimisation.jpg")
+        st.image(img)
+    except FileNotFoundError:
+        st.warning("Image not found: supply_chain_optimisation.jpg")
+    
     st.header("Input Parameters")
-    purchase_dow = st.number_input(
-        "Purchased Day of the Week", min_value=0, max_value=6, step=1, value=3
-    )
-    purchase_month = st.number_input(
-        "Purchased Month", min_value=1, max_value=12, step=1, value=1
-    )
+    purchase_dow = st.number_input("Purchased Day of the Week", min_value=0, max_value=6, step=1, value=3)
+    purchase_month = st.number_input("Purchased Month", min_value=1, max_value=12, step=1, value=1)
     year = st.number_input("Purchased Year", value=2018)
     product_size_cm3 = st.number_input("Product Size in cm^3", value=9328)
     product_weight_g = st.number_input("Product Weight in grams", value=1800)
-    geolocation_state_customer = st.number_input(
-        "Geolocation State of the Customer", value=10
-    )
-    geolocation_state_seller = st.number_input(
-        "Geolocation State of the Seller", value=20
-    )
+    geolocation_state_customer = st.number_input("Geolocation State of the Customer", value=10)
+    geolocation_state_seller = st.number_input("Geolocation State of the Seller", value=20)
     distance = st.number_input("Distance", value=475.35)
-    """
-    Your Code Here
-    """
 
-
-# Define the submit button for the input parameters.
+# Output container
 with st.container():
-    # Define the output container for the predicted wait time.
     st.header("Output: Wait Time in Days")
-
-    # When the submit button is clicked, call the wait time predictor function and display the predicted wait time in the output container.
-    if submit:
+    if st.button("Predict Wait Time"):
         prediction = waitime_predictor(
-            purchase_dow,
-            purchase_month,
-            year,
-            product_size_cm3,
-            product_weight_g,
-            geolocation_state_customer,
-            geolocation_state_seller,
-            distance,
-        )
+            purchase_dow, purchase_month, year,
+            product_size_cm3, product_weight_g,
+            geolocation_state_customer, geolocation_state_seller, distance)
         with st.spinner(text="This may take a moment..."):
-            st.write(prediction)
-    import pandas as pd
+            if prediction is not None:
+                st.write(prediction)
 
-    # Define a sample dataset for demonstration purposes.
-    data = {
-        "Purchased Day of the Week": ["0", "3", "1"],
-        "Purchased Month": ["6", "3", "1"],
-        "Purchased Year": ["2018", "2017", "2018"],
-        "Product Size in cm^3": ["37206.0", "63714", "54816"],
-        "Product Weight in grams": ["16250.0", "7249", "9600"],
-        "Geolocation State Customer": ["25", "25", "25"],
-        "Geolocation State Seller": ["20", "7", "20"],
-        "Distance": ["247.94", "250.35", "4.915"],
-    }
+# Sample dataset
+sample_data = {
+    "Purchased Day of the Week": [0, 3, 1],
+    "Purchased Month": [6, 3, 1],
+    "Purchased Year": [2018, 2017, 2018],
+    "Product Size in cm^3": [37206.0, 63714, 54816],
+    "Product Weight in grams": [16250.0, 7249, 9600],
+    "Geolocation State Customer": [25, 25, 25],
+    "Geolocation State Seller": [20, 7, 20],
+    "Distance": [247.94, 250.35, 4.915],
+}
 
-    # Create a DataFrame from the sample dataset.
-    """
-    Your Code Here
-    """
+df = pd.DataFrame(sample_data)
 
-    # Display the sample dataset in the Streamlit app.
-    st.header("Sample Dataset")
-    st.write(df)
+st.header("Sample Dataset")
+st.write(df)
