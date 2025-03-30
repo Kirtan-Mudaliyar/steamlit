@@ -8,7 +8,6 @@ gdown==4.7.1
 Pillow==10.2.0
 requests==2.31.0
 tenacity==8.2.3
-markdown-it-py
-rich
-pygments
-mdurl
+setuptools
+wheel
+pip
