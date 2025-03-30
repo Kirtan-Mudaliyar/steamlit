@@ -14,7 +14,8 @@ st.set_page_config(page_title="Timelytics", layout="wide")
 st.title("Timelytics: Optimize your supply chain with advanced forecasting techniques.")
 
 st.caption(
-    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."")
+    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."
+)
 
 st.caption(
     "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."
@@ -22,7 +23,7 @@ st.caption(
 
 # Define model path
 MODEL_PATH = "voting_model.pkl"
-MODEL_URL = "https://drive.google.com/uc?id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"  # Correct Google Drive direct link
+MODEL_URL = "https://drive.google.com/uc?id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"  # Corrected direct download link
 
 # Function to download model
 def download_model():
@@ -35,18 +36,12 @@ def load_model():
     try:
         with open(MODEL_PATH, "rb") as f:
             return pickle.load(f)
-    except (pickle.UnpicklingError, EOFError, KeyError):
+    except (pickle.UnpicklingError, EOFError):
         return joblib.load(MODEL_PATH)  # Fallback to joblib if pickle fails
-    except Exception as e:
-        st.error(f"⚠️ Model loading error: {e}")
-        return None
 
 # Download and load model
 download_model()
 voting_model = load_model()
-
-if voting_model is None:
-    st.error("🚨 Model loading failed. Please check the logs.")
 
 # Wait time predictor function
 def waitime_predictor(
