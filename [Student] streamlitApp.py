@@ -13,29 +13,30 @@ st.set_page_config(page_title="Timelytics", layout="wide")
 st.title("Timelytics: Optimize your supply chain with advanced forecasting techniques.")
 
 st.caption(
-    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."
-)
+    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."")
 
 st.caption(
-    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."
-)
+    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."")
 
-# Define model path and correct Google Drive direct link
+# Define model path and Google Drive direct link
 MODEL_PATH = "voting_model.pkl"
-MODEL_ID = "1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"  # Extracted from the provided folder
+MODEL_ID = "1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"
 MODEL_URL = f"https://drive.google.com/uc?export=download&id={MODEL_ID}"
 
 # Function to download model
 def download_model():
     if not os.path.exists(MODEL_PATH):
         st.info("Downloading model file...")
-        gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+        try:
+            gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+        except Exception as e:
+            st.error(f"Failed to download the model: {e}")
     
     if os.path.exists(MODEL_PATH):
         file_size = os.path.getsize(MODEL_PATH) / (1024 * 1024)  # Convert bytes to MB
         st.success(f"Model downloaded successfully. File size: {file_size:.2f} MB")
     else:
-        st.error("Failed to download the model. Please check the link or upload it manually.")
+        st.error("Model file is missing. Please upload it manually.")
 
 # Load the trained ensemble model
 @st.cache_resource
