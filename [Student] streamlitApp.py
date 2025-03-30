@@ -22,7 +22,7 @@ st.caption(
 
 # Define model path
 MODEL_PATH = "voting_model.pkl"
-MODEL_URL = "https://drive.google.com/uc?id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"  # Corrected direct download link
+MODEL_URL = "https://drive.google.com/file/d/1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG/view?usp=drive_link"  # Corrected direct download link
 
 # Function to download model
 def download_model():
