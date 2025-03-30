@@ -20,22 +20,28 @@ st.caption(
     "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."
 )
 
-# Define model path
+# Define model path and correct Google Drive direct link
 MODEL_PATH = "voting_model.pkl"
-MODEL_URL = "https://drive.google.com/file/d/1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG/view?usp=drive_link"  # Corrected direct download link
+MODEL_ID = "1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"  # Extracted from the provided folder
+MODEL_URL = f"https://drive.google.com/uc?export=download&id={MODEL_ID}"
 
 # Function to download model
 def download_model():
     if not os.path.exists(MODEL_PATH):
+        st.info("Downloading model file...")
         gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
-    if not os.path.exists(MODEL_PATH):  # Double-check if download was successful
-        st.error("Failed to download the model. Please check the link.")
+    
+    if os.path.exists(MODEL_PATH):
+        file_size = os.path.getsize(MODEL_PATH) / (1024 * 1024)  # Convert bytes to MB
+        st.success(f"Model downloaded successfully. File size: {file_size:.2f} MB")
+    else:
+        st.error("Failed to download the model. Please check the link or upload it manually.")
 
 # Load the trained ensemble model
 @st.cache_resource
 def load_model():
     try:
-        return joblib.load(MODEL_PATH)  # Use joblib.load() instead of joblib.dump()
+        return joblib.load(MODEL_PATH)
     except Exception as e:
         st.error(f"Error loading the model: {e}. Please check the file format.")
         return None
