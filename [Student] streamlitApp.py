@@ -3,7 +3,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from PIL import Image
-import gdown
+import requests
 import os
 
 # Set page configuration
@@ -13,12 +13,10 @@ st.set_page_config(page_title="Timelytics", layout="wide")
 st.title("Timelytics: Optimize your supply chain with advanced forecasting techniques.")
 
 st.caption(
-    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."
-)
-
+    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."")
 
 st.caption(
-    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them.")
+    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."")
 
 # Define model path and Google Drive direct link
 MODEL_PATH = "voting_model.pkl"
@@ -29,16 +27,14 @@ MODEL_URL = f"https://drive.google.com/uc?export=download&id={MODEL_ID}"
 def download_model():
     if not os.path.exists(MODEL_PATH):
         st.info("Downloading model file...")
-        try:
-            gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
-        except Exception as e:
-            st.error(f"Failed to download the model: {e}")
-    
-    if os.path.exists(MODEL_PATH):
-        file_size = os.path.getsize(MODEL_PATH) / (1024 * 1024)  # Convert bytes to MB
-        st.success(f"Model downloaded successfully. File size: {file_size:.2f} MB")
-    else:
-        st.error("Model file is missing. Please upload it manually.")
+        response = requests.get(MODEL_URL, stream=True)
+        if response.status_code == 200:
+            with open(MODEL_PATH, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            st.success("Model downloaded successfully!")
+        else:
+            st.error("Failed to download the model. Please check the link or upload it manually.")
 
 # Load the trained ensemble model
 @st.cache_resource
