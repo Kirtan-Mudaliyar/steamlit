@@ -18,7 +18,7 @@ st.caption(
 
 
 st.caption(
-    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."")
+    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them.")
 
 # Define model path and Google Drive direct link
 MODEL_PATH = "voting_model.pkl"
