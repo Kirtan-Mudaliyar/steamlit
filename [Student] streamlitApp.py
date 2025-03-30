@@ -14,12 +14,10 @@ st.set_page_config(page_title="Timelytics", layout="wide")
 st.title("Timelytics: Optimize your supply chain with advanced forecasting techniques.")
 
 st.caption(
-    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."
-)
+    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times."")
 
 st.caption(
-    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."
-)
+    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."")
 
 # Define model path
 MODEL_PATH = "voting_model.pkl"
@@ -37,12 +35,9 @@ def download_model():
 def load_model():
     try:
         return joblib.load(MODEL_PATH)  # Try joblib first (better for sklearn models)
-    except (joblib.externals.loky.process_executor.TerminatedWorkerError, EOFError):
-        try:
-            with open(MODEL_PATH, "rb") as f:
-                return pickle.load(f)
-        except pickle.UnpicklingError:
-            st.error("Error loading the model. Please check the file format.")
+    except Exception as e:
+        st.error(f"Error loading the model: {e}. Please check the file format.")
+        return None
 
 # Download and load model
 download_model()
@@ -53,6 +48,10 @@ def waitime_predictor(
     purchase_dow, purchase_month, year, product_size_cm3,
     product_weight_g, geolocation_state_customer,
     geolocation_state_seller, distance):
+    if voting_model is None:
+        st.error("Model failed to load. Cannot make predictions.")
+        return None
+    
     prediction = voting_model.predict(
         np.array([[purchase_dow, purchase_month, year,
                    product_size_cm3, product_weight_g,
@@ -63,8 +62,12 @@ def waitime_predictor(
 
 # Sidebar inputs
 with st.sidebar:
-    img = Image.open("./assets/supply_chain_optimisation.jpg")
-    st.image(img)
+    try:
+        img = Image.open("./assets/supply_chain_optimisation.jpg")
+        st.image(img)
+    except FileNotFoundError:
+        st.warning("Image not found: supply_chain_optimisation.jpg")
+    
     st.header("Input Parameters")
     purchase_dow = st.number_input("Purchased Day of the Week", min_value=0, max_value=6, step=1, value=3)
     purchase_month = st.number_input("Purchased Month", min_value=1, max_value=12, step=1, value=1)
@@ -84,7 +87,8 @@ with st.container():
             product_size_cm3, product_weight_g,
             geolocation_state_customer, geolocation_state_seller, distance)
         with st.spinner(text="This may take a moment..."):
-            st.write(prediction)
+            if prediction is not None:
+                st.write(prediction)
 
 # Sample dataset
 sample_data = {
