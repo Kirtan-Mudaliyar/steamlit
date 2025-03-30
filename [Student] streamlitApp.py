@@ -28,16 +28,21 @@ MODEL_URL = "https://drive.google.com/uc?id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"  
 # Function to download model
 def download_model():
     if not os.path.exists(MODEL_PATH):
-        gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+        gdown.download(MODEL_URL, MODEL_PATH, quiet=False, fuzzy=True)
+    if not os.path.exists(MODEL_PATH):  # Double-check if download was successful
+        st.error("Failed to download the model. Please check the link.")
 
 # Load the trained ensemble model
 @st.cache_resource
 def load_model():
     try:
-        with open(MODEL_PATH, "rb") as f:
-            return pickle.load(f)
-    except (pickle.UnpicklingError, EOFError):
-        return joblib.load(MODEL_PATH)  # Fallback to joblib if pickle fails
+        return joblib.load(MODEL_PATH)  # Try joblib first (better for sklearn models)
+    except (joblib.externals.loky.process_executor.TerminatedWorkerError, EOFError):
+        try:
+            with open(MODEL_PATH, "rb") as f:
+                return pickle.load(f)
+        except pickle.UnpicklingError:
+            st.error("Error loading the model. Please check the file format.")
 
 # Download and load model
 download_model()
