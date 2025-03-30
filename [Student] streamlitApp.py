@@ -1,5 +1,4 @@
 import streamlit as st
-import pickle
 import joblib
 import numpy as np
 import pandas as pd
@@ -21,7 +20,6 @@ st.caption(
     "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them."
 )
 
-
 # Define model path
 MODEL_PATH = "voting_model.pkl"
 MODEL_URL = "https://drive.google.com/uc?id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"  # Corrected direct download link
@@ -29,7 +27,7 @@ MODEL_URL = "https://drive.google.com/uc?id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"  
 # Function to download model
 def download_model():
     if not os.path.exists(MODEL_PATH):
-       gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+        gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
     if not os.path.exists(MODEL_PATH):  # Double-check if download was successful
         st.error("Failed to download the model. Please check the link.")
 
@@ -37,8 +35,7 @@ def download_model():
 @st.cache_resource
 def load_model():
     try:
-        return joblib.dump(model, 'voting_model.pkl')
-  # Try joblib first (better for sklearn models)
+        return joblib.load(MODEL_PATH)  # Use joblib.load() instead of joblib.dump()
     except Exception as e:
         st.error(f"Error loading the model: {e}. Please check the file format.")
         return None
