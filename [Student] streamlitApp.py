@@ -3,7 +3,6 @@ import joblib
 import numpy as np
 import pandas as pd
 from PIL import Image
-import requests
 import os
 
 # Set page configuration
@@ -18,36 +17,25 @@ st.caption(
 st.caption(
     "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them.")
 
-# Define model path and Google Drive direct link
-MODEL_PATH = "voting_model.pkl"
-MODEL_ID = "1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"
-MODEL_URL = f"https://drive.google.com/uc?export=download&id={MODEL_ID}"
-
-# Function to download model
-def download_model():
-    if not os.path.exists(MODEL_PATH):
-        st.info("Downloading model file...")
-        response = requests.get(MODEL_URL, stream=True)
-        if response.status_code == 200:
-            with open(MODEL_PATH, "wb") as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            st.success("Model downloaded successfully!")
-        else:
-            st.error("Failed to download the model. Please check the link or upload it manually.")
+# Upload Model File
+st.sidebar.header("Upload Model File")
+uploaded_model = st.sidebar.file_uploader("Upload Model File (voting_model.pkl)", type=["pkl"])
 
 # Load the trained ensemble model
 @st.cache_resource
-def load_model():
-    try:
-        return joblib.load(MODEL_PATH)
-    except Exception as e:
-        st.error(f"Error loading the model: {e}. Please check the file format.")
+def load_model(uploaded_file):
+    if uploaded_file is not None:
+        try:
+            return joblib.load(uploaded_file)
+        except Exception as e:
+            st.error(f"Error loading the model: {e}. Please upload a valid model file.")
+            return None
+    else:
+        st.warning("Please upload the model file to proceed.")
         return None
 
-# Download and load model
-download_model()
-voting_model = load_model()
+# Load model only if uploaded
+voting_model = load_model(uploaded_model)
 
 # Wait time predictor function
 def waitime_predictor(
@@ -69,10 +57,10 @@ def waitime_predictor(
 # Sidebar inputs
 with st.sidebar:
     try:
-        img = Image.open("./assets/supply_chain_optimisation.jpg")
+        img = Image.open("supply_chain_optimisation.jpg")  # Ensure image is uploaded in the same directory
         st.image(img)
     except FileNotFoundError:
-        st.warning("Image not found: supply_chain_optimisation.jpg")
+        st.warning("Image not found: supply_chain_optimisation.jpg. Please ensure the image is in the correct directory.")
     
     st.header("Input Parameters")
     purchase_dow = st.number_input("Purchased Day of the Week", min_value=0, max_value=6, step=1, value=3)
