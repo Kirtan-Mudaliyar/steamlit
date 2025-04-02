@@ -33,7 +33,6 @@ def load_model(uploaded_file):
             st.error(f"Error loading the model: {e}. Please upload a valid model file.")
             return None
     else:
-        st.warning("Please upload the model file to proceed.")
         return None
 
 # Load model only if uploaded
@@ -67,6 +66,13 @@ with st.sidebar:
     geolocation_state_customer = st.number_input("Geolocation State of the Customer", value=10)
     geolocation_state_seller = st.number_input("Geolocation State of the Seller", value=20)
     distance = st.number_input("Distance", value=475.35)
+    
+    # Image upload option to resolve missing image issue
+    st.sidebar.header("Upload an Image")
+    uploaded_image = st.sidebar.file_uploader("Upload Image (JPG/PNG)", type=["jpg", "png"])
+    if uploaded_image:
+        img = Image.open(uploaded_image)
+        st.sidebar.image(img, caption="Uploaded Image", use_column_width=True)
 
 # Output container
 with st.container():
