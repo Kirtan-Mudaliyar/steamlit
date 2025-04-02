@@ -26,7 +26,9 @@ uploaded_model = st.sidebar.file_uploader("Upload Model File (voting_model.pkl)"
 def load_model(uploaded_file):
     if uploaded_file is not None:
         try:
-            return joblib.load(uploaded_file)
+            with open("temp_model.pkl", "wb") as f:
+                f.write(uploaded_file.read())  # Save file temporarily
+            return joblib.load("temp_model.pkl")  # Load model
         except Exception as e:
             st.error(f"Error loading the model: {e}. Please upload a valid model file.")
             return None
@@ -56,12 +58,6 @@ def waitime_predictor(
 
 # Sidebar inputs
 with st.sidebar:
-    try:
-        img = Image.open("supply_chain_optimisation.jpg")  # Ensure image is uploaded in the same directory
-        st.image(img)
-    except FileNotFoundError:
-        st.warning("Image not found: supply_chain_optimisation.jpg. Please ensure the image is in the correct directory.")
-    
     st.header("Input Parameters")
     purchase_dow = st.number_input("Purchased Day of the Week", min_value=0, max_value=6, step=1, value=3)
     purchase_month = st.number_input("Purchased Month", min_value=1, max_value=12, step=1, value=1)
