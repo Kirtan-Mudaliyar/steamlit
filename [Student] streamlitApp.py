@@ -17,7 +17,7 @@ st.caption(
 st.caption(
     "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them.")
 
-# Upload Model File
+# Sidebar: Upload Model File
 st.sidebar.header("Upload Model File")
 uploaded_model = st.sidebar.file_uploader("Upload Model File (voting_model.pkl)", type=["pkl"])
 
@@ -43,38 +43,49 @@ def waitime_predictor(
     purchase_dow, purchase_month, year, product_size_cm3,
     product_weight_g, geolocation_state_customer,
     geolocation_state_seller, distance):
+    
     if voting_model is None:
         st.error("Model failed to load. Cannot make predictions.")
         return None
     
-    prediction = voting_model.predict(
-        np.array([[purchase_dow, purchase_month, year,
-                   product_size_cm3, product_weight_g,
-                   geolocation_state_customer,
-                   geolocation_state_seller, distance]])
-    )
-    return round(prediction[0])
+    try:
+        prediction = voting_model.predict(
+            np.array([[purchase_dow, purchase_month, year,
+                       product_size_cm3, product_weight_g,
+                       geolocation_state_customer,
+                       geolocation_state_seller, distance]])
+        )
+        return round(prediction[0])
+    except Exception as e:
+        st.error(f"Error making prediction: {e}")
+        return None
 
-# Sidebar inputs
+# Sidebar Inputs
 with st.sidebar:
     st.header("Input Parameters")
     purchase_dow = st.number_input("Purchased Day of the Week", min_value=0, max_value=6, step=1, value=3)
     purchase_month = st.number_input("Purchased Month", min_value=1, max_value=12, step=1, value=1)
     year = st.number_input("Purchased Year", value=2018)
-    product_size_cm3 = st.number_input("Product Size in cm^3", value=9328)
+    product_size_cm3 = st.number_input("Product Size in cm³", value=9328)
     product_weight_g = st.number_input("Product Weight in grams", value=1800)
     geolocation_state_customer = st.number_input("Geolocation State of the Customer", value=10)
     geolocation_state_seller = st.number_input("Geolocation State of the Seller", value=20)
     distance = st.number_input("Distance", value=475.35)
-    
-    # Image upload option to resolve missing image issue
-    st.sidebar.header("Upload an Image")
-    uploaded_image = st.sidebar.file_uploader("Upload Image (JPG/PNG)", type=["jpg", "png"])
-    if uploaded_image:
-        img = Image.open(uploaded_image)
-        st.sidebar.image(img, caption="Uploaded Image", use_column_width=True)
 
-# Output container
+    # Display default image if exists, otherwise allow user upload
+    st.header("Supply Chain Visualization")
+    image_path = "supply_chain_optimisation.jpg"
+    
+    if os.path.exists(image_path):
+        img = Image.open(image_path)
+        st.image(img, caption="Supply Chain Optimization", use_column_width=True)
+    else:
+        uploaded_image = st.file_uploader("Upload an Image (JPG/PNG)", type=["jpg", "png"])
+        if uploaded_image:
+            img = Image.open(uploaded_image)
+            st.image(img, caption="Uploaded Image", use_column_width=True)
+
+# Prediction Output Container
 with st.container():
     st.header("Output: Wait Time in Days")
     if st.button("Predict Wait Time"):
@@ -82,16 +93,17 @@ with st.container():
             purchase_dow, purchase_month, year,
             product_size_cm3, product_weight_g,
             geolocation_state_customer, geolocation_state_seller, distance)
-        with st.spinner(text="This may take a moment..."):
-            if prediction is not None:
-                st.write(prediction)
+        
+        if prediction is not None:
+            with st.spinner("Predicting..."):
+                st.subheader(f"Estimated Delivery Time: **{prediction} days**")
 
-# Sample dataset
+# Sample Dataset
 sample_data = {
     "Purchased Day of the Week": [0, 3, 1],
     "Purchased Month": [6, 3, 1],
     "Purchased Year": [2018, 2017, 2018],
-    "Product Size in cm^3": [37206.0, 63714, 54816],
+    "Product Size in cm³": [37206.0, 63714, 54816],
     "Product Weight in grams": [16250.0, 7249, 9600],
     "Geolocation State Customer": [25, 25, 25],
     "Geolocation State Seller": [20, 7, 20],
