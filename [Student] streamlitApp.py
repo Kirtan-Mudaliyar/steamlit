@@ -46,7 +46,6 @@ def load_model_from_gdrive():
         return None
 
 
-
 # Load model
 voting_model = load_model_from_gdrive()
 
