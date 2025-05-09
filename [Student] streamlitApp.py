@@ -19,16 +19,25 @@ st.caption(
 # Download model from Google Drive (only once and cache it)
 @st.cache_resource
 def load_model_from_gdrive():
-    model_path = "voting_model.pkl"
+    model_path = "voting_model.pkl"  # Path where the model will be saved
+    
     if not os.path.exists(model_path):
-        # Use fuzzy=True to allow link-based downloads
-        gdown.download(
-            "https://drive.google.com/file/d/1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG/view?usp=sharing",
-            model_path,
-            fuzzy=True,
-            quiet=False
-        )
-    return joblib.load(model_path)
+        # Correct Google Drive direct download link
+        url = "https://drive.google.com/uc?export=download&id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"
+        try:
+            gdown.download(url, model_path, quiet=False)
+            st.success("Model downloaded successfully!")
+        except Exception as e:
+            st.error(f"Failed to download model: {e}")
+            return None
+    
+    try:
+        # Load the model with joblib
+        return joblib.load(model_path)
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None
+
 
 # Load model
 voting_model = load_model_from_gdrive()
