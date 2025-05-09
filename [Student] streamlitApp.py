@@ -11,7 +11,6 @@ st.set_page_config(page_title="Timelytics", layout="wide")
 
 # App title and caption
 st.title("Timelytics: Optimize your supply chain with advanced forecasting techniques.")
-
 st.caption(
     "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times.")
 st.caption(
@@ -22,10 +21,16 @@ st.caption(
 def load_model_from_gdrive():
     model_path = "voting_model.pkl"
     if not os.path.exists(model_path):
-        file_id = "1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"
-        gdown.download(f"https://drive.google.com/uc?id={file_id}", model_path, quiet=False)
+        # Use fuzzy=True to allow link-based downloads
+        gdown.download(
+            "https://drive.google.com/file/d/1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG/view?usp=sharing",
+            model_path,
+            fuzzy=True,
+            quiet=False
+        )
     return joblib.load(model_path)
 
+# Load model
 voting_model = load_model_from_gdrive()
 
 # Prediction function
@@ -95,6 +100,5 @@ sample_data = {
 }
 
 df = pd.DataFrame(sample_data)
-
 st.header("Sample Dataset")
 st.write(df)
