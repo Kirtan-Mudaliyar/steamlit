@@ -11,50 +11,42 @@ st.set_page_config(page_title="Timelytics", layout="wide")
 
 # App title and caption
 st.title("Timelytics: Optimize your supply chain with advanced forecasting techniques.")
-st.caption(
-    "Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times.")
-st.caption(
-    "With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them.")
+st.caption("Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times.")
+st.caption("With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them.")
 
 # Download model from Google Drive (only once and cache it)
 @st.cache_resource
 def load_model_from_gdrive():
-    model_path = "voting_model.pkl"  # Path where the model will be saved
+    model_path = "voting_model.pkl"
     if not os.path.exists(model_path):
-        # Correct Google Drive direct download link
+        # Publicly share the file with "Anyone with the link"
         url = "https://drive.google.com/uc?export=download&id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"
         try:
-            st.write(f"Downloading model from: {url}")  # Debugging line
+            st.info("Downloading model... Please wait.")
             gdown.download(url, model_path, quiet=False)
-            st.success(f"Model downloaded successfully to {model_path}!")
         except Exception as e:
-            st.error(f"Failed to download model: {e}")
+            st.error(f"Download failed: {e}")
             return None
     
-    # Check if file exists after download
-    if os.path.exists(model_path):
-        st.write(f"Model found at: {model_path}")  # Debugging line
-    else:
-        st.error(f"Model file not found at: {model_path}")
+    if not os.path.exists(model_path):
+        st.error("Model file not found after attempted download.")
+        st.write("Files in current directory:", os.listdir("."))
         return None
-    
+
     try:
-        # Load the model with joblib
-        return joblib.load(model_path)
+        model = joblib.load(model_path)
+        return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
         return None
-
 
 # Load model
 voting_model = load_model_from_gdrive()
 
 # Prediction function
-def waitime_predictor(
-    purchase_dow, purchase_month, year, product_size_cm3,
-    product_weight_g, geolocation_state_customer,
-    geolocation_state_seller, distance):
-    
+def waitime_predictor(purchase_dow, purchase_month, year, product_size_cm3,
+                      product_weight_g, geolocation_state_customer,
+                      geolocation_state_seller, distance):
     try:
         prediction = voting_model.predict(
             np.array([[purchase_dow, purchase_month, year,
