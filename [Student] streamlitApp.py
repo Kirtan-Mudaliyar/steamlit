@@ -20,16 +20,23 @@ st.caption(
 @st.cache_resource
 def load_model_from_gdrive():
     model_path = "voting_model.pkl"  # Path where the model will be saved
-    
     if not os.path.exists(model_path):
         # Correct Google Drive direct download link
         url = "https://drive.google.com/uc?export=download&id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"
         try:
+            st.write(f"Downloading model from: {url}")  # Debugging line
             gdown.download(url, model_path, quiet=False)
-            st.success("Model downloaded successfully!")
+            st.success(f"Model downloaded successfully to {model_path}!")
         except Exception as e:
             st.error(f"Failed to download model: {e}")
             return None
+    
+    # Check if file exists after download
+    if os.path.exists(model_path):
+        st.write(f"Model found at: {model_path}")  # Debugging line
+    else:
+        st.error(f"Model file not found at: {model_path}")
+        return None
     
     try:
         # Load the model with joblib
@@ -37,6 +44,7 @@ def load_model_from_gdrive():
     except Exception as e:
         st.error(f"Error loading model: {e}")
         return None
+
 
 
 # Load model
