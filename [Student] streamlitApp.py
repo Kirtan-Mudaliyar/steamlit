@@ -19,7 +19,9 @@ def load_model():
     model_path = "voting_model.pkl"
     if os.path.exists(model_path):
         try:
-            return joblib.load(model_path)
+            # Load model using joblib (ensure compatibility)
+            model = joblib.load(model_path)
+            return model
         except Exception as e:
             st.error(f"Error loading model: {e}")
             return None
