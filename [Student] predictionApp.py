@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 import os
-import gdown
 
 # Set page configuration
 st.set_page_config(page_title="Timelytics", layout="wide")
@@ -14,34 +13,22 @@ st.title("Timelytics: Optimize your supply chain with advanced forecasting techn
 st.caption("Timelytics is an ensemble model that utilizes XGBoost, Random Forests, and SVM to accurately forecast Order to Delivery (OTD) times.")
 st.caption("With Timelytics, businesses can identify potential bottlenecks and delays in their supply chain and take proactive measures to address them.")
 
-# Download model from Google Drive (only once and cache it)
+# Load model locally
 @st.cache_resource
-def load_model_from_gdrive():
+def load_model():
     model_path = "voting_model.pkl"
-    if not os.path.exists(model_path):
-        # Publicly share the file with "Anyone with the link"
-        url = "https://drive.google.com/uc?export=download&id=1F8iQDIV8OZovlfupRaVzQ-lfV-_F3JoG"
+    if os.path.exists(model_path):
         try:
-            st.info("Downloading model... Please wait.")
-            gdown.download(url, model_path, quiet=False)
+            return joblib.load(model_path)
         except Exception as e:
-            st.error(f"Download failed: {e}")
+            st.error(f"Error loading model: {e}")
             return None
-    
-    if not os.path.exists(model_path):
-        st.error("Model file not found after attempted download.")
-        st.write("Files in current directory:", os.listdir("."))
-        return None
-
-    try:
-        model = joblib.load(model_path)
-        return model
-    except Exception as e:
-        st.error(f"Error loading model: {e}")
+    else:
+        st.error("Model file 'voting_model.pkl' not found in the directory.")
         return None
 
 # Load model
-voting_model = load_model_from_gdrive()
+voting_model = load_model()
 
 # Prediction function
 def waitime_predictor(purchase_dow, purchase_month, year, product_size_cm3,
